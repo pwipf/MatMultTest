@@ -20,28 +20,28 @@ public class Matmult {
 	static Color alg1Col=BOOK_BLUE;
 	static Color alg2Col=BOOK_RED;
 
-	static double maxTime=700;
+	static double maxTime=15000;
 
 	public static void main(String[] args) {
 		Random gen = new Random();
 
-		int maxn=600; //getInt("Enter the max number n: ");
-		//System.out.println("maxn: "+maxn);
+		int maxn=1200;
+        int minn=16;
 
-		setupGraphic(maxn,(int)maxTime);
+		setupGraphic(maxn,minn,(int)maxTime);
 		double xstart=.05; // x values to plot are from .05 to 1
 		double ystart=.05;
 
 
-		for(int n=2;n<maxn;n++){
+		for(int n=minn;n<maxn;n+=4){
 			//initialize and fill 2 matrices A and B with random integers
 			int[][] A=new int[n][n];
 			int[][] B=new int[n][n];
 			int[][] C,D;
 			for(int i=0;i<n;i++){
 				for(int j=0;j<n;j++){
-					A[i][j]=gen.nextInt(100);
-					B[i][j]=gen.nextInt(100);
+					A[i][j]=gen.nextInt(100)+1;
+					B[i][j]=gen.nextInt(100)+1;
 				}
 			}
 
@@ -53,27 +53,27 @@ public class Matmult {
 			long t1=System.currentTimeMillis()-startTime;
 
 			D=strassen(A,B);
-			
+
 			long t2=(System.currentTimeMillis()-startTime)-t1;
 
 
-			System.out.println("\n            N: "+n);
-			System.out.println("   naive time: "+t1);
-			System.out.println("strassen time: "+t2);
+//			System.out.println("\n            N: "+n);
+//			System.out.println("   naive time: "+t1);
+//			System.out.println("strassen time: "+t2);
 
 			// just curious...
-			boolean correct=true;
-			for(int i=0;i<n;i++)
-				for(int j=0;j<n;j++)
-					if(C[i][j]!=D[i][j])
-						correct=false;
-			System.out.println("correct? "+(correct? "true": "false"));
-			
+//			boolean correct=true;
+//			for(int i=0;i<n;i++)
+//				for(int j=0;j<n;j++)
+//					if(C[i][j]!=D[i][j])
+//						correct=false;
+			//System.out.println("correct? "+(correct? "true": "false"));
+
 			// show result on graph
 			setPenColor(alg1Col);
-			point(map(n,2,maxn,xstart,1),map(t1,0,maxTime,ystart,1));
+			point(map(n,minn,maxn,xstart,1),map(t1,0,maxTime,ystart,1));
 			setPenColor(alg2Col);
-			point(map(n,2,maxn,xstart,1),map(t2,0,maxTime,ystart,1));
+			point(map(n,minn,maxn,xstart,1),map(t2,0,maxTime,ystart,1));
 
 
 		}
@@ -91,10 +91,10 @@ public class Matmult {
 			for(int j=0;j<p;j++)
 				for(int k=0;k<n;k++)
 					c[i][j]+=a[i][k]*b[k][j];
-			
+
 		return c;
 	}
-	
+
 	// strassen's recursive alg
 	// assumes matrix is square and a power of 2 size
 	static int[][] strassen(int[][] A, int[][] B){
@@ -103,10 +103,10 @@ public class Matmult {
 		if(n<=16){
 			return naive(A,B);
 		}
-				
+
 		// java fills with zeros
-		int[][] C=new int[n][n]; 
-		
+		int[][] C=new int[n][n];
+
 		int halfsize=n/2;
 
 		//init new quarters
@@ -130,7 +130,7 @@ public class Matmult {
 				a21[i][j]=A[i+halfsize][j];
 				a12[i][j]=A[i][j+halfsize];
 				a22[i][j]=A[i+halfsize][j+halfsize];
-				
+
 				b11[i][j]=B[i][j];
 				b21[i][j]=B[i+halfsize][j];
 				b12[i][j]=B[i][j+halfsize];
@@ -181,7 +181,7 @@ public class Matmult {
 		}
 		return C;
 	}
-	
+
 	static int[][] matAdd(int[][]a,int[][]b){
 		int m=a.length;
 		int n=a[0].length;
@@ -191,7 +191,7 @@ public class Matmult {
 				c[i][j]=a[i][j]+b[i][j];
 		return c;
 	}
-	
+
 	static int[][] matSub(int[][]a,int[][]b){
 		int m=a.length;
 		int n=a[0].length;
@@ -201,21 +201,21 @@ public class Matmult {
 				c[i][j]=a[i][j]-b[i][j];
 		return c;
 	}
-	
+
 	// utility functions ///////////////////////////////////////////////////////
   // stuff for graphical output
-	static void setupGraphic(int maxx, int maxy){
+	static void setupGraphic(int maxx, int minx, int maxy){
 		setCanvasSize(800,600);
 		setPenRadius(.001);
 		line(0,.05,1,.05);
 		line(.05,0,.05,1);
 		text(0,.5,"Time");
-		text(0,.45,"(msec)");
+		text(0,.45,"(sec)");
 		text(.5,0,"n (matrix size n x n)");
 		text(.97,.02,String.format("%d",maxx));
-		text(.06,.02,String.format("%d",1));
-		text(.022,.97,String.format("%d",maxy));
-		text(.042,.06,String.format("%d",1));
+		text(.06,.02,String.format("%d",minx));
+		text(.022,.97,String.format("%d",maxy/1000));
+		text(.042,.06,String.format("%d",0));
 		setPenColor(alg1Col);
 		text(.3,1.02,String.format("Naive Alg"));
 		setPenColor(alg2Col);
@@ -223,7 +223,7 @@ public class Matmult {
 		setPenRadius(.005);
 	}
 
-	// helpful map function (from arduino library)
+	// helpful map function
 	// returns x maped from in_min-in_max TO out_min-out_max
 	static double map(double x, double in_min, double in_max, double out_min, double out_max)
 	{
